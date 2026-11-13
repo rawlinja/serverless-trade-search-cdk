@@ -7,7 +7,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm'
 import type { Construct } from 'constructs'
 import { PARAMETER_NAMES } from '@config/parameter-names'
 
-// Six times the phase 2 ingest Lambda's 5 min timeout, as AWS recommends for SQS consumers.
+// Six times the ingest Lambda's 5 min timeout, as AWS recommends for SQS consumers.
 const QUEUE_VISIBILITY_TIMEOUT = Duration.minutes(30)
 const MAX_RECEIVE_COUNT = 3
 const ALARM_PERIOD = Duration.minutes(5)
