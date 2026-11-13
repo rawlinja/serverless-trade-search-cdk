@@ -2,8 +2,6 @@
 
 Search trade activity reports dropped into S3.
 
-Built in three phases (spec §14): **1. S3 → SQS** (this phase), 2. SQS → Aurora, 3. API and UI.
-
 ## Prerequisites
 
 - Node.js 26+ and pnpm
@@ -33,7 +31,7 @@ BUCKET=$(aws ssm get-parameter --name /trade-search/ingestion/reports-bucket-nam
 QUEUE_URL=$(aws cloudformation describe-stacks --stack-name TradeSearchIngestion \
   --query "Stacks[0].Outputs[?OutputKey=='IngestQueueUrl'].OutputValue" --output text)
 
-echo '1234, JD1, AAPL, 09:30:05.100, B, 10, 134.30, "phase 1 check"' > /tmp/check.csv
+echo '1234, JD1, AAPL, 09:30:05.100, B, 10, 134.30, "pipeline check"' > /tmp/check.csv
 aws s3 cp /tmp/check.csv "s3://$BUCKET/reports/$(date +%F)/check.csv"
 aws sqs receive-message --queue-url "$QUEUE_URL" --wait-time-seconds 20 --max-number-of-messages 10
 ```
@@ -54,7 +52,7 @@ Then clear the queue:
 aws sqs purge-queue --queue-url "$QUEUE_URL"
 ```
 
-Every receive of a message counts toward the 3 receives that send it to the dead-letter queue and fire its alarm, and a received message stays hidden for 30 minutes, so re-running the check soon after only shows new messages. Purge after checking. If you skip the purge, check messages left in the queue (kept 4 days) are ingested once phase 2 is deployed.
+Every receive of a message counts toward the 3 receives that send it to the dead-letter queue and fire its alarm, and a received message stays hidden for 30 minutes, so re-running the check soon after only shows new messages. Purge after checking. If you skip the purge, check messages left in the queue (kept 4 days) are ingested once the ingest Lambda is deployed.
 
 ## Tear down
 
