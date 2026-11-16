@@ -6,5 +6,7 @@ import { PersistenceStack } from '@stacks/persistence-stack'
 const app = new App()
 const env = { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION }
 
-new PersistenceStack(app, 'TradeSearchPersistence', { env })
-new IngestionStack(app, 'TradeSearchIngestion', { env })
+const persistence = new PersistenceStack(app, 'TradeSearchPersistence', { env })
+const ingestion = new IngestionStack(app, 'TradeSearchIngestion', { env })
+
+ingestion.addDependency(persistence)
