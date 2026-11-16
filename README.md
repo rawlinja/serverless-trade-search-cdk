@@ -1,6 +1,6 @@
 # Trade Search
 
-Search trade activity reports dropped into S3.
+Search trade activity reports dropped into S3. Reports are loaded into Aurora Serverless v2 PostgreSQL as they arrive.
 
 ## Prerequisites
 
@@ -42,36 +42,50 @@ aws rds-data execute-statement --resource-arn "$CLUSTER_ARN" --secret-arn "$SECR
 
 `formattedRecords` lists `001_create_trade_search_schema`. Aurora pauses after 5 idle minutes; if the call fails with `DatabaseResumingException`, wait 30 seconds and run it again.
 
-## Check that reports reach the queue
+## Load a report
+
+Reports are CSV files without a header, one trade per line:
+
+```
+account, advisor, symbol, HH:MM:SS(.mmm), B|S, qty, price, "notes"
+```
+
+Times are New York local time on the date in the key; `notes` may be empty or left out. Drop reports under `reports/YYYY-MM-DD/`:
 
 ```bash
 BUCKET=$(aws ssm get-parameter --name /trade-search/ingestion/reports-bucket-name \
   --query Parameter.Value --output text)
-QUEUE_URL=$(aws cloudformation describe-stacks --stack-name TradeSearchIngestion \
-  --query "Stacks[0].Outputs[?OutputKey=='IngestQueueUrl'].OutputValue" --output text)
 
-echo '1234, JD1, AAPL, 09:30:05.100, B, 10, 134.30, "pipeline check"' > /tmp/check.csv
-aws s3 cp /tmp/check.csv "s3://$BUCKET/reports/$(date +%F)/check.csv"
-aws sqs receive-message --queue-url "$QUEUE_URL" --wait-time-seconds 20 --max-number-of-messages 10
+pnpm generate-csv 1000 > /tmp/trades.csv
+aws s3 cp /tmp/trades.csv "s3://$BUCKET/reports/$(TZ=America/New_York date +%F)/trades.csv"
 ```
 
-The message body names the bucket, the key `reports/<date>/check.csv` and `"eventName":"ObjectCreated:Put"`. S3 may first send one `s3:TestEvent` message when the notification is created; receive again to get the real one.
+## Check ingestion
 
-Uploads outside `reports/` or without a `.csv` suffix produce no message:
+With `CLUSTER_ARN` and `SECRET_ARN` set as in **Check the database**:
 
 ```bash
-aws s3 cp /tmp/check.csv "s3://$BUCKET/check.csv"
-aws s3 cp /tmp/check.csv "s3://$BUCKET/reports/$(date +%F)/check.txt"
-aws sqs receive-message --queue-url "$QUEUE_URL" --wait-time-seconds 20 --max-number-of-messages 10   # no new message
+aws rds-data execute-statement --resource-arn "$CLUSTER_ARN" --secret-arn "$SECRET_ARN" \
+  --database trades --format-records-as JSON \
+  --sql 'select source_key, status, rows_ingested, rows_rejected, errors::text as errors
+         from ingestion_runs order by id desc limit 5'
+
+aws rds-data execute-statement --resource-arn "$CLUSTER_ARN" --secret-arn "$SECRET_ARN" \
+  --database trades --format-records-as JSON \
+  --sql 'select count(*) as trades from trading_activity_reports'
 ```
 
-Then clear the queue:
+Within a minute or two the newest run shows `"status":"succeeded"`, `"rows_ingested":1000` and `"rows_rejected":0`. Uploading the same file again under the same key is skipped; uploading different content under a key that already loaded trades is recorded as `failed` with `object overwritten` and needs a human.
+
+If no run appears, read the ingest Lambda's logs:
 
 ```bash
-aws sqs purge-queue --queue-url "$QUEUE_URL"
+LOG_GROUP=$(aws cloudformation describe-stack-resources --stack-name TradeSearchIngestion \
+  --query "StackResources[?ResourceType=='AWS::Logs::LogGroup'].PhysicalResourceId" --output text)
+aws logs tail "$LOG_GROUP" --since 15m
 ```
 
-Every receive of a message counts toward the 3 receives that send it to the dead-letter queue and fire its alarm, and a received message stays hidden for 30 minutes, so re-running the check soon after only shows new messages. Purge after checking. If you skip the purge, check messages left in the queue (kept 4 days) are ingested once the ingest Lambda is deployed.
+A report that keeps failing moves to the dead-letter queue after 3 attempts, and its alarm fires.
 
 ## Tear down
 
