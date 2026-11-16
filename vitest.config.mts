@@ -13,7 +13,21 @@ export default defineConfig({
     },
   },
   test: {
+    env: { POWERTOOLS_LOG_LEVEL: 'SILENT' },
     projects: [
+      {
+        extends: true,
+        test: { name: 'unit', include: ['src/tests/{lib,web,scripts}/**/*.test.ts'] },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'integration',
+          include: ['src/tests/integration/**/*.test.ts'],
+          globalSetup: ['src/tests/integration/global-setup.ts'],
+          fileParallelism: false,
+        },
+      },
       {
         extends: true,
         // Synthesizing a stack takes a few seconds.
