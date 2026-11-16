@@ -73,10 +73,8 @@ export class PersistenceStack extends Stack {
     })
     const resource = new CustomResource(this, 'Migrations', {
       serviceToken: provider.serviceToken,
-      // Changes whenever a migration is added, so CloudFormation sends an Update.
       properties: { migrationIds: MIGRATIONS.map((migration) => migration.id).join(',') },
     })
-    // The writer instance must be available before the Data API can run statements.
     resource.node.addDependency(cluster)
   }
 
