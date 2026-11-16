@@ -23,6 +23,10 @@ export type OpenedReport = { body: Readable; sizeBytes: number }
 export type IngestDeps = { db: Db; openReport: (ref: ReportRef) => Promise<OpenedReport> }
 export type IngestOutcome = 'succeeded' | 'skipped' | 'dropped'
 
+export class ReportChangedError extends Error {
+  name = 'ReportChangedError'
+}
+
 type LoadSummary = { rejected: number; errors: RejectedLine[] }
 
 export async function ingestReport(deps: IngestDeps, ref: ReportRef): Promise<IngestOutcome> {
@@ -61,7 +65,15 @@ async function loadReport(
   runId: number,
   tradeDate: string,
 ): Promise<IngestOutcome> {
-  const report = await openReport(ref)
+  const report = await openReport(ref).catch((error) => {
+    if (!(error instanceof ReportChangedError)) throw error
+    return undefined
+  })
+  if (!report) {
+    await failRun(db, runId, 'object overwritten')
+    return 'dropped'
+  }
+
   if (report.sizeBytes > MAX_REPORT_BYTES) {
     report.body.destroy()
     await failRun(db, runId, 'file too large')

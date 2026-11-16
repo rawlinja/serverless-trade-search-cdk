@@ -116,4 +116,15 @@ describe('readReportLines', () => {
 
     await expect(Array.fromAsync(lines)).rejects.toThrow('connection reset')
   })
+
+  it('destroys the input when the consumer stops reading', async () => {
+    const input = Readable.from(Array.from({ length: 1000 }, () => `${SAMPLE_LINE}\n`))
+
+    for await (const result of readReportLines(input, '2026-11-07')) {
+      expect(result.ok).toBe(true)
+      break
+    }
+
+    expect(input.destroyed).toBe(true)
+  })
 })
