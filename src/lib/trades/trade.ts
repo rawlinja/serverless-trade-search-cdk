@@ -16,3 +16,7 @@ export type ReportLine = { line: number; trade: Trade }
 export type RejectedLine = { line: number; message: string }
 
 export const MAX_QTY = 2_147_483_647
+
+export function isSide(value: string): value is Side {
+  return value === 'B' || value === 'S'
+}

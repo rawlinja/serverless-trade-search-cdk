@@ -1,4 +1,4 @@
-import { MAX_QTY, type RejectedLine, type Side, type Trade } from '@lib/trades/trade'
+import { isSide, MAX_QTY, type RejectedLine, type Trade } from '@lib/trades/trade'
 import { toTradedAt } from './trade-time'
 
 export type ParsedLine =
@@ -39,10 +39,6 @@ export function parseLine(fields: string[], line: number, tradeDate: string): Pa
       notes: notes || null,
     },
   }
-}
-
-function isSide(value: string): value is Side {
-  return value === 'B' || value === 'S'
 }
 
 function isQty(value: string): boolean {
