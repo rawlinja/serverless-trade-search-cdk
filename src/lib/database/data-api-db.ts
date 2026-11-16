@@ -11,9 +11,15 @@ export type RetryPolicy = { resumeRetryMs: number; retryDelayMs?: number }
 
 const DEFAULT_RETRY_DELAY_MS = 1_000
 
+// Both mean the writer isn't ready yet: resuming from pause, or briefly unavailable.
+const WAITING_FOR_DATABASE_ERRORS = new Set([
+  'DatabaseResumingException',
+  'DatabaseUnavailableException',
+])
+
 export class DatabaseResumingError extends Error {
   constructor() {
-    super('database is resuming from pause')
+    super('database is not available yet')
     this.name = 'DatabaseResumingError'
   }
 }
@@ -39,7 +45,7 @@ export class DataApiDb implements Db {
         const result = await this.client.send(command)
         return result.formattedRecords ? (JSON.parse(result.formattedRecords) as SqlRow[]) : []
       } catch (error) {
-        if (!isResuming(error)) throw error
+        if (!isWaitingForDatabase(error)) throw error
         if (Date.now() >= deadline) throw new DatabaseResumingError()
         await sleep(this.retry.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS)
       }
@@ -61,8 +67,8 @@ function requireEnv(env: NodeJS.ProcessEnv, name: string): string {
   return value
 }
 
-function isResuming(error: unknown): boolean {
-  return error instanceof Error && error.name === 'DatabaseResumingException'
+function isWaitingForDatabase(error: unknown): boolean {
+  return error instanceof Error && WAITING_FOR_DATABASE_ERRORS.has(error.name)
 }
 
 function toSqlParameters(params: SqlParams): SqlParameter[] {
