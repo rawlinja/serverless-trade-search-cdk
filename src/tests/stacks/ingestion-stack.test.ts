@@ -33,6 +33,11 @@ const ingestFunctionId = () =>
     template.findResources('AWS::Lambda::Function', { Properties: { Runtime: 'nodejs26.x' } }),
   )
 
+const ingestRoleId = (): string => {
+  const ingestFunction = template.findResources('AWS::Lambda::Function')[ingestFunctionId()]
+  return ingestFunction.Properties.Role['Fn::GetAtt'][0]
+}
+
 const ssmParameterId = (name: string) =>
   onlyLogicalId(
     template.findParameters('*', { Type: 'AWS::SSM::Parameter::Value<String>', Default: name }),
@@ -145,6 +150,7 @@ describe('IngestionStack', () => {
 
   it('lets the ingest Lambda read reports and use the Data API', () => {
     template.hasResourceProperties('AWS::IAM::Policy', {
+      Roles: [{ Ref: ingestRoleId() }],
       PolicyDocument: {
         Statement: Match.arrayWith([
           Match.objectLike({ Action: Match.arrayWith(['s3:GetObject*']), Effect: 'Allow' }),

@@ -35,15 +35,26 @@ describe('s3ReportOpener', () => {
     expect(await openReport(REPORT_REF)).toEqual({ body, sizeBytes: 42 })
   })
 
-  it('turns a failed precondition into ReportChangedError', async () => {
+  it.each([
+    { name: 'error name', failure: { name: 'PreconditionFailed' } },
+    { name: 'HTTP status', failure: { $metadata: { httpStatusCode: 412 } } },
+  ])('turns a failed precondition found by $name into ReportChangedError', async ({ failure }) => {
     s3.on(GetObjectCommand).rejects(
-      Object.assign(new Error('At least one of the pre-conditions you specified did not hold'), {
-        name: 'PreconditionFailed',
-        $metadata: { httpStatusCode: 412 },
-      }),
+      Object.assign(
+        new Error('At least one of the pre-conditions you specified did not hold'),
+        failure,
+      ),
     )
 
     await expect(openReport(REPORT_REF)).rejects.toBeInstanceOf(ReportChangedError)
+  })
+
+  it('fails when the object has no body', async () => {
+    s3.on(GetObjectCommand).resolves({ ContentLength: 1 })
+
+    await expect(openReport(REPORT_REF)).rejects.toThrow(
+      'no body for s3://reports-bucket/reports/2026-11-07/a.csv',
+    )
   })
 
   it('rethrows any other failure unchanged', async () => {

@@ -37,10 +37,28 @@ describe('ingestion runs', () => {
     const id = await startRun(db, REPORT_KEY, 'etag-1')
     await failRun(db, id, 'Error: boom')
 
-    expect(await readRun(id)).toMatchObject({
+    const run = await readRun(id)
+    expect(run).toMatchObject({
       status: 'failed',
       errors: [{ message: 'Error: boom' }],
     })
+    expect(run.finished_at).not.toBeNull()
+  })
+
+  it('marks an existing run of the same version as rejected', async () => {
+    const id = await startRun(db, REPORT_KEY, 'etag-1')
+    await failRun(db, id, 'Error: boom')
+
+    await recordRejectedReport(db, REPORT_KEY, 'etag-1', 'object overwritten')
+
+    const run = await readRun(id)
+    expect(run).toMatchObject({
+      status: 'failed',
+      attempts: 2,
+      errors: [{ message: 'object overwritten' }],
+    })
+    expect(run.finished_at).not.toBeNull()
+    expect(await findRuns(db, REPORT_KEY)).toHaveLength(1)
   })
 
   it('records a rejected report that never started', async () => {

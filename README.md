@@ -85,7 +85,7 @@ LOG_GROUP=$(aws cloudformation describe-stack-resources --stack-name TradeSearch
 aws logs tail "$LOG_GROUP" --since 15m
 ```
 
-A report that keeps failing moves to the dead-letter queue after 3 attempts, and its alarm fires.
+A report that keeps failing moves to the dead-letter queue after 3 attempts, and its alarm fires. The ingest Lambda's error alarm fires only when the Lambda itself crashes or times out; a report that fails on its own shows up through the dead-letter queue alarm instead.
 
 ## Tear down
 
