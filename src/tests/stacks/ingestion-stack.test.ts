@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { IngestionStack } from '@stacks/ingestion-stack'
 import { PARAMETER_NAMES } from '@config/parameter-names'
 import { expectNoCrossStackWiring } from '../support/cross-stack'
+import { expectNothingRetained } from '../support/teardown'
 
 const template = Template.fromStack(new IngestionStack(new App(), 'TestIngestion'))
 
@@ -126,5 +127,9 @@ describe('IngestionStack', () => {
 
   it('creates no cross-stack exports', () => {
     expectNoCrossStackWiring(template)
+  })
+
+  it('leaves nothing behind on teardown', () => {
+    expectNothingRetained(template)
   })
 })
