@@ -5,6 +5,7 @@ import {
   BATCH_SIZE,
   ingestReport,
   MAX_REPORT_BYTES,
+  ReportChangedError,
   type OpenedReport,
 } from '@lib/ingest/ingest-report'
 import type { ReportRef } from '@lib/ingest/s3-event'
@@ -28,6 +29,12 @@ const failingSaves: Db = {
     sql.includes('jsonb_to_recordset')
       ? Promise.reject(new Error('connection lost'))
       : db.execute(sql, params),
+}
+
+const MANY_LINES = 100_000
+
+async function* manyLines() {
+  for (let line = 0; line < MANY_LINES; line++) yield VALID_LINE
 }
 
 const openText =
@@ -116,11 +123,16 @@ describe('ingestReport', () => {
   })
 
   it('drops a report over the size limit', async () => {
-    const openOversized = openText(VALID_LINE, MAX_REPORT_BYTES + 1)
+    const body = Readable.from([VALID_LINE])
+    const openOversized = async (): Promise<OpenedReport> => ({
+      body,
+      sizeBytes: MAX_REPORT_BYTES + 1,
+    })
 
     const outcome = await ingestReport({ db, openReport: openOversized }, REPORT_REF)
 
     expect(outcome).toBe('dropped')
+    expect(body.destroyed).toBe(true)
     expect(await countTrades()).toBe(0)
     expect(await readRun('etag-1')).toMatchObject({
       status: 'failed',
@@ -152,5 +164,31 @@ describe('ingestReport', () => {
 
     expect(await readRun('etag-1')).toMatchObject({ status: 'succeeded', attempts: 2 })
     expect(await countTrades()).toBe(1)
+  })
+
+  it('drops a report whose version no longer exists without retrying', async () => {
+    const openChanged = async (): Promise<OpenedReport> => {
+      throw new ReportChangedError()
+    }
+
+    const outcome = await ingestReport({ db, openReport: openChanged }, REPORT_REF)
+
+    expect(outcome).toBe('dropped')
+    expect(await countTrades()).toBe(0)
+    expect(await readRun('etag-1')).toMatchObject({
+      status: 'failed',
+      errors: [{ message: 'object overwritten' }],
+    })
+  })
+
+  it('destroys the report body when saving fails mid-report', async () => {
+    const body = Readable.from(manyLines())
+    const openBody = async (): Promise<OpenedReport> => ({ body, sizeBytes: 1 })
+
+    await expect(
+      ingestReport({ db: failingSaves, openReport: openBody }, REPORT_REF),
+    ).rejects.toThrow('connection lost')
+
+    expect(body.destroyed).toBe(true)
   })
 })

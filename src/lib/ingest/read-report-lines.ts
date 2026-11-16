@@ -20,7 +20,11 @@ export async function* readReportLines(
 
   const records: AsyncIterable<{ record: string[]; info: Info }> = input.pipe(parser)
 
-  for await (const { record, info } of records) {
-    yield parseLine(record, info.lines, tradeDate)
+  try {
+    for await (const { record, info } of records) {
+      yield parseLine(record, info.lines, tradeDate)
+    }
+  } finally {
+    input.destroy()
   }
 }
