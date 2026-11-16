@@ -6,12 +6,15 @@ Search trade activity reports dropped into S3.
 
 - Node.js 26+ and pnpm
 - AWS credentials for deploying
+- Docker (local Postgres for integration tests)
 
 ## Develop
 
 ```bash
 pnpm install
-pnpm test              # infra tests
+pnpm test              # unit + infra tests
+pnpm db:up             # local Postgres on port 54329
+pnpm test:integration
 pnpm typecheck && pnpm lint && pnpm format:check
 pnpm synth
 ```
@@ -22,6 +25,22 @@ pnpm synth
 pnpm cdk bootstrap     # once per account/region
 pnpm cdk deploy --all
 ```
+
+The first deploy of TradeSearchPersistence takes 10–15 minutes while Aurora is created.
+
+## Check the database
+
+```bash
+CLUSTER_ARN=$(aws ssm get-parameter --name /trade-search/persistence/cluster-arn \
+  --query Parameter.Value --output text)
+SECRET_ARN=$(aws ssm get-parameter --name /trade-search/persistence/secret-arn \
+  --query Parameter.Value --output text)
+
+aws rds-data execute-statement --resource-arn "$CLUSTER_ARN" --secret-arn "$SECRET_ARN" \
+  --database trades --format-records-as JSON --sql 'select id from schema_migrations'
+```
+
+`formattedRecords` lists `001_create_trade_search_schema`. Aurora pauses after 5 idle minutes; if the call fails with `DatabaseResumingException`, wait 30 seconds and run it again.
 
 ## Check that reports reach the queue
 
