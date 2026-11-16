@@ -118,7 +118,10 @@ describe('readReportLines', () => {
   })
 
   it('destroys the input when the consumer stops reading', async () => {
-    const input = Readable.from(Array.from({ length: 1000 }, () => `${SAMPLE_LINE}\n`))
+    async function* endlessReport() {
+      while (true) yield `${SAMPLE_LINE}\n`
+    }
+    const input = Readable.from(endlessReport())
 
     for await (const result of readReportLines(input, '2026-11-07')) {
       expect(result.ok).toBe(true)

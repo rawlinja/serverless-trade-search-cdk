@@ -31,7 +31,7 @@ const failingSaves: Db = {
       : db.execute(sql, params),
 }
 
-const MANY_LINES = 100_000
+const MANY_LINES = BATCH_SIZE * 4
 
 async function* manyLines() {
   for (let line = 0; line < MANY_LINES; line++) yield VALID_LINE
