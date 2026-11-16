@@ -4,7 +4,6 @@ import type { Db, SqlParams, SqlRow, SqlValue } from './db'
 const INT8_TYPE_ID = 20
 const NAMED_PARAM_PATTERN = /(?<!:):([a-zA-Z_]\w*)/g
 
-// Data API returns bigint as a number; match it so both adapters yield the same rows.
 pg.types.setTypeParser(INT8_TYPE_ID, Number)
 
 export class PgDb implements Db {

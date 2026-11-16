@@ -1,7 +1,6 @@
 import { DataApiDb, dataApiConfigFromEnv } from '@lib/database/data-api-db'
 import { createMigrationHandler } from '@lib/migrate/handle-migration-event'
 
-// A deploy may find Aurora paused; give it time to resume.
 const MIGRATE_RESUME_RETRY_MS = 120_000
 
 export const handler = createMigrationHandler(

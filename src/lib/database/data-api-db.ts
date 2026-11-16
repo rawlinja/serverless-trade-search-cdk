@@ -11,7 +11,6 @@ export type RetryPolicy = { resumeRetryMs: number; retryDelayMs?: number }
 
 const DEFAULT_RETRY_DELAY_MS = 1_000
 
-// Both mean the writer isn't ready yet: resuming from pause, or briefly unavailable.
 const WAITING_FOR_DATABASE_ERRORS = new Set([
   'DatabaseResumingException',
   'DatabaseUnavailableException',

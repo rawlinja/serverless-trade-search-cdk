@@ -1,6 +1,5 @@
 export type Migration = { id: string; statements: string[] }
 
-// The Data API runs one statement per call, so each migration is a list of single statements.
 export const MIGRATIONS: Migration[] = [
   {
     id: '001_create_trade_search_schema',

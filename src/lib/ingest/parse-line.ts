@@ -7,7 +7,6 @@ export type ParsedLine =
 const COLUMN_COUNT = 8
 const REQUIRED_COLUMN_COUNT = COLUMN_COUNT - 1
 const WHOLE_NUMBER_PATTERN = /^\d+$/
-// numeric(18, 4): at most 14 digits before the point and 4 after.
 const PRICE_PATTERN = /^\d{1,14}(\.\d{1,4})?$/
 
 export function parseLine(fields: string[], line: number, tradeDate: string): ParsedLine {

@@ -75,7 +75,6 @@ describe('PersistenceStack', () => {
     const functions = Object.values(template.findResources('AWS::Lambda::Function'))
     const functionLogGroupIds = functions.map((fn) => fn.Properties.LoggingConfig?.LogGroup?.Ref)
 
-    // The migrate Lambda and the custom-resource provider's own Lambda.
     expect(functions).toHaveLength(2)
     expect(functionLogGroupIds.toSorted()).toEqual(logGroupIds.toSorted())
     template.allResourcesProperties('AWS::Logs::LogGroup', { RetentionInDays: 30 })
