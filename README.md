@@ -60,6 +60,8 @@ pnpm generate-csv 1000 > /tmp/trades.csv
 aws s3 cp /tmp/trades.csv "s3://$BUCKET/reports/$(TZ=America/New_York date +%F)/trades.csv"
 ```
 
+Reports up to 50 MB (about 640,000 lines) are accepted; one that size loads in about 2 minutes. A larger report is recorded as `failed` with `file too large`, and a key without a date as `failed` with `key has no YYYY-MM-DD date`; neither is loaded.
+
 ## Check ingestion
 
 With `CLUSTER_ARN` and `SECRET_ARN` set as in **Check the database**:
