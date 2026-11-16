@@ -70,6 +70,17 @@ describe('PersistenceStack', () => {
     expect(migrations[0].DependsOn).toEqual(expect.arrayContaining([writerId]))
   })
 
+  it('sends every Lambda log to a log group deleted with the stack', () => {
+    const logGroupIds = logicalIdsOf('AWS::Logs::LogGroup')
+    const functions = Object.values(template.findResources('AWS::Lambda::Function'))
+    const functionLogGroupIds = functions.map((fn) => fn.Properties.LoggingConfig?.LogGroup?.Ref)
+
+    // The migrate Lambda and the custom-resource provider's own Lambda.
+    expect(functions).toHaveLength(2)
+    expect(functionLogGroupIds.toSorted()).toEqual(logGroupIds.toSorted())
+    template.allResourcesProperties('AWS::Logs::LogGroup', { RetentionInDays: 30 })
+  })
+
   it('leaves nothing behind on teardown', () => {
     expectNothingRetained(template)
   })

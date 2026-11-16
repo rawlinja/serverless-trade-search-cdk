@@ -13,7 +13,7 @@ import { Provider } from 'aws-cdk-lib/custom-resources'
 import type { Construct } from 'constructs'
 import { MIGRATIONS } from '@lib/migrate/migrations'
 import { connectToDatabase, type DatabaseAccess } from '@config/database-access'
-import { LAMBDA_DEFAULTS, lambdaEntry } from '@config/lambda-defaults'
+import { LAMBDA_DEFAULTS, lambdaEntry, lambdaLogGroup } from '@config/lambda-defaults'
 import { PARAMETER_NAMES } from '@config/parameter-names'
 
 export const DATABASE_NAME = 'trades'
@@ -63,10 +63,14 @@ export class PersistenceStack extends Stack {
       ...LAMBDA_DEFAULTS,
       entry: lambdaEntry('custom-resources/migrate.ts'),
       timeout: MIGRATE_TIMEOUT,
+      logGroup: lambdaLogGroup(this, 'MigrateFunctionLogs'),
     })
     connectToDatabase(migrate, access)
 
-    const provider = new Provider(this, 'MigrationProvider', { onEventHandler: migrate })
+    const provider = new Provider(this, 'MigrationProvider', {
+      onEventHandler: migrate,
+      logGroup: lambdaLogGroup(this, 'MigrationProviderLogs'),
+    })
     const resource = new CustomResource(this, 'Migrations', {
       serviceToken: provider.serviceToken,
       // Changes whenever a migration is added, so CloudFormation sends an Update.

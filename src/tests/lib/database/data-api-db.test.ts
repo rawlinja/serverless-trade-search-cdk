@@ -10,6 +10,8 @@ const DATA_API_CONFIG = {
 }
 const rdsData = mockClient(RDSDataClient)
 const resuming = () => Object.assign(new Error('resuming'), { name: 'DatabaseResumingException' })
+const unavailable = () =>
+  Object.assign(new Error('unavailable'), { name: 'DatabaseUnavailableException' })
 const createDb = (resumeRetryMs = 0) =>
   new DataApiDb(DATA_API_CONFIG, { resumeRetryMs, retryDelayMs: 0 }, new RDSDataClient({}))
 
@@ -49,6 +51,16 @@ describe('DataApiDb', () => {
 
   it('retries while the database resumes from pause', async () => {
     rdsData.on(ExecuteStatementCommand).rejectsOnce(resuming()).resolves({ formattedRecords: '[]' })
+
+    expect(await createDb(1_000).execute('select 1')).toEqual([])
+    expect(rdsData.commandCalls(ExecuteStatementCommand)).toHaveLength(2)
+  })
+
+  it('retries while the writer instance is unavailable', async () => {
+    rdsData
+      .on(ExecuteStatementCommand)
+      .rejectsOnce(unavailable())
+      .resolves({ formattedRecords: '[]' })
 
     expect(await createDb(1_000).execute('select 1')).toEqual([])
     expect(rdsData.commandCalls(ExecuteStatementCommand)).toHaveLength(2)
