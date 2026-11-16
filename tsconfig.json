@@ -16,5 +16,5 @@
       "@lib/*": ["./src/lib/*"]
     }
   },
-  "include": ["src", "vitest.config.mts"]
+  "include": ["src", "scripts", "vitest.config.mts"]
 }
