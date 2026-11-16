@@ -6,7 +6,12 @@
     "node": ">=26"
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --project unit --project stacks",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:stacks": "vitest run --project stacks",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -16,16 +21,25 @@
   "packageManager": "pnpm@11.28.6",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/aws-lambda": "^8.10.164",
     "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
     "aws-cdk": "^2.1148.0",
     "aws-cdk-lib": "^2.275.0",
+    "aws-sdk-client-mock": "^4.1.0",
     "constructs": "^10.8.1",
+    "esbuild": "^0.28.2",
     "eslint": "^10.14.0",
     "globals": "^17.14.0",
+    "pg": "^8.23.1",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.1",
     "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.36.0",
+    "@aws-sdk/client-rds-data": "^3.1167.0"
   }
 }
