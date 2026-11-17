@@ -17,10 +17,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "synth": "cdk synth",
-    "generate-csv": "tsx scripts/generate-csv.ts"
+    "generate-csv": "tsx scripts/generate-csv.ts",
+    "smoke": "tsx scripts/smoke.ts"
   },
   "packageManager": "pnpm@11.28.6",
   "devDependencies": {
+    "@aws-sdk/client-ssm": "^3.1170.0",
     "@eslint/js": "^10.0.1",
     "@types/aws-lambda": "^8.10.164",
     "@types/node": "^26.6.6",
