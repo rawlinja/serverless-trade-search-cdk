@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trade Search</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <h1>Trade Search</h1>
+    <form id="search-form">
+      <label>Account <input name="account" /></label>
+      <label>Advisor <input name="advisor" /></label>
+      <label>Symbol <input name="symbol" /></label>
+      <label>
+        Side
+        <select name="side">
+          <option value="">Any</option>
+          <option value="B">Buy</option>
+          <option value="S">Sell</option>
+        </select>
+      </label>
+      <label>From (New York) <input name="from" type="datetime-local" step="1" /></label>
+      <label>To (New York) <input name="to" type="datetime-local" step="1" /></label>
+      <label>Qty min <input name="qty_min" inputmode="numeric" /></label>
+      <label>Qty max <input name="qty_max" inputmode="numeric" /></label>
+      <label>Price min <input name="price_min" inputmode="decimal" /></label>
+      <label>Price max <input name="price_max" inputmode="decimal" /></label>
+      <label class="wide">
+        Keywords
+        <input name="keyword" maxlength="200" placeholder='rebalance OR "tax loss" -cash' />
+      </label>
+      <button type="submit">Search</button>
+    </form>
+    <p id="status" role="status"></p>
+    <table id="results">
+      <thead>
+        <tr>
+          <th>Traded at (New York)</th>
+          <th>Account</th>
+          <th>Advisor</th>
+          <th>Symbol</th>
+          <th>Side</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="load-more" type="button" hidden>Load more</button>
+  </body>
+</html>
