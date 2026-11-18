@@ -1,3 +1,5 @@
+import { sideLabel } from './trade-format.js'
+
 const NEW_YORK_TIME_ZONE = 'America/New_York'
 const MINUTE_MS = 60_000
 const DATETIME_LOCAL_WITHOUT_SECONDS_LENGTH = 16
@@ -21,7 +23,6 @@ const FIELD_LABELS = {
   price_max: 'Price max',
   keyword: 'Keywords',
 }
-const SIDE_NAMES = { B: 'Buy', S: 'Sell' }
 
 export function toQueryString(fields, cursor) {
   const query = new URLSearchParams()
@@ -96,7 +97,7 @@ export function exampleSearches(now) {
 }
 
 function chipValue(name, value) {
-  if (name === 'side') return SIDE_NAMES[value] ?? value
+  if (name === 'side') return sideLabel(value) ?? value
   if (name === 'from' || name === 'to') return value.replace('T', ' ')
   return value
 }
