@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { formatNewYorkTime, toNewYorkInstant, toQueryString } from '../../../web/search-query.js'
+import {
+  exampleSearches,
+  filterChips,
+  toNewYorkInstant,
+  toQueryString,
+  toSearchFields,
+} from '../../../web/search-query.js'
 
 describe('toQueryString', () => {
   it('drops blank fields and trims values', () => {
@@ -40,12 +46,63 @@ describe('toNewYorkInstant', () => {
   })
 })
 
-describe('formatNewYorkTime', () => {
-  it.each([
-    { instant: '2026-11-07T14:30:05.100Z', shown: '2026-11-07 09:30:05.100' },
-    { instant: '2026-07-01T13:30:00.000Z', shown: '2026-07-01 09:30:00.000' },
-    { instant: '2026-11-07T05:00:00.000Z', shown: '2026-11-07 00:00:00.000' },
-  ])('shows $instant as $shown', ({ instant, shown }) => {
-    expect(formatNewYorkTime(instant)).toBe(shown)
+describe('toSearchFields', () => {
+  it('trims values, upper-cases the symbol and reads times as New York time', () => {
+    expect(
+      toSearchFields({
+        symbol: ' tsla ',
+        account: '1234 ',
+        side: 'S',
+        from: '2026-11-17T09:30',
+        to: '',
+      }),
+    ).toEqual({
+      symbol: 'TSLA',
+      account: '1234',
+      side: 'S',
+      from: '2026-11-17T09:30:00-05:00',
+      to: '',
+    })
+  })
+})
+
+describe('filterChips', () => {
+  it('lists the filled-in fields with readable labels', () => {
+    expect(
+      filterChips({
+        keyword: 'rebalance',
+        symbol: 'TSLA',
+        side: 'S',
+        from: '2026-11-17T09:30',
+        account: '',
+      }),
+    ).toEqual([
+      { name: 'keyword', label: 'Keywords: rebalance' },
+      { name: 'symbol', label: 'Symbol: TSLA' },
+      { name: 'side', label: 'Side: Sell' },
+      { name: 'from', label: 'From: 2026-11-17 09:30' },
+    ])
+  })
+})
+
+describe('exampleSearches', () => {
+  it('offers four examples dated in New York', () => {
+    const examples = exampleSearches(new Date('2026-11-18T03:00:00Z'))
+
+    expect(examples).toEqual([
+      { label: 'rebalance', form: { keyword: 'rebalance' } },
+      { label: '"tax loss"', form: { keyword: '"tax loss"' } },
+      {
+        label: 'TSLA · Sells today',
+        form: { symbol: 'TSLA', side: 'S', from: '2026-11-17T00:00' },
+      },
+      { label: 'Account 1234 · last 7 days', form: { account: '1234', from: '2026-11-11T00:00' } },
+    ])
+  })
+
+  it('counts days back across a clock change', () => {
+    const now = new Date('2026-11-07T04:30:00Z')
+
+    expect(exampleSearches(now)[3].form.from).toBe('2026-10-31T00:00')
   })
 })

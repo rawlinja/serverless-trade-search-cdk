@@ -1,4 +1,5 @@
-import { formatNewYorkTime, toNewYorkInstant, toQueryString } from './search-query.js'
+import { toQueryString, toSearchFields } from './search-query.js'
+import { formatTradeTime } from './trade-format.js'
 
 const MAX_RESUME_RETRIES = 6
 const DEFAULT_RETRY_AFTER_SECONDS = 5
@@ -57,7 +58,7 @@ async function search(searchId, cursor, attempt = 0) {
 
 function readFilters() {
   const fields = Object.fromEntries(new FormData(form))
-  return { ...fields, from: toNewYorkInstant(fields.from), to: toNewYorkInstant(fields.to) }
+  return toSearchFields(fields)
 }
 
 function searchUrl(cursor) {
@@ -72,8 +73,9 @@ function retryAfterMs(response) {
 function appendRows(trades) {
   for (const trade of trades) {
     const row = results.insertRow()
+    const { date, time } = formatTradeTime(trade.tradedAt)
     const cells = [
-      formatNewYorkTime(trade.tradedAt),
+      `${date} ${time}`,
       trade.account,
       trade.advisor,
       trade.symbol,
