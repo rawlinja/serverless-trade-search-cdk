@@ -143,20 +143,20 @@
             <span id="showing" class="tagline"></span>
           </div>
           <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Time (New York)</th>
-                  <th scope="col">Account</th>
-                  <th scope="col">Advisor</th>
-                  <th scope="col">Symbol</th>
-                  <th scope="col">Side</th>
-                  <th scope="col" class="number">Qty</th>
-                  <th scope="col" class="number">Price</th>
-                  <th scope="col">Notes</th>
+            <table role="table">
+              <thead role="rowgroup">
+                <tr role="row">
+                  <th scope="col" role="columnheader">Time (New York)</th>
+                  <th scope="col" role="columnheader">Account</th>
+                  <th scope="col" role="columnheader">Advisor</th>
+                  <th scope="col" role="columnheader">Symbol</th>
+                  <th scope="col" role="columnheader">Side</th>
+                  <th scope="col" role="columnheader" class="number">Qty</th>
+                  <th scope="col" role="columnheader" class="number">Price</th>
+                  <th scope="col" role="columnheader">Notes</th>
                 </tr>
               </thead>
-              <tbody id="result-rows"></tbody>
+              <tbody id="result-rows" role="rowgroup"></tbody>
             </table>
           </div>
           <div id="results-footer" class="results-footer" hidden>

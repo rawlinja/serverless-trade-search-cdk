@@ -187,14 +187,15 @@ function announce(message) {
 
 function tradeRow(trade) {
   const row = document.createElement('tr')
+  row.setAttribute('role', 'row')
   row.append(
     timeCell(trade.tradedAt),
-    textCell(trade.account),
-    textCell(trade.advisor),
+    textCell(trade.account, 'account'),
+    textCell(trade.advisor, 'advisor'),
     textCell(trade.symbol, 'symbol'),
     sideCell(trade.side),
-    textCell(formatQuantity(trade.qty), 'number'),
-    textCell(formatPrice(trade.price), 'number'),
+    textCell(formatQuantity(trade.qty), 'qty number'),
+    textCell(formatPrice(trade.price), 'price number'),
     textCell(trade.notes ?? '', 'notes'),
   )
   return row
@@ -208,14 +209,16 @@ function timeCell(tradedAt) {
 }
 
 function sideCell(side) {
-  const cell = textCell('')
+  const cell = textCell('', 'side')
   const pillClass = SIDE_PILL_CLASSES[side]
   cell.append(element('span', sideLabel(side), pillClass ? `pill ${pillClass}` : 'pill'))
   return cell
 }
 
 function textCell(text, className) {
-  return element('td', text, className)
+  const cell = element('td', text, className)
+  cell.setAttribute('role', 'cell')
+  return cell
 }
 
 function element(tagName, text, className) {

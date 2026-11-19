@@ -94,6 +94,7 @@ button:disabled {
 
 main {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
   max-width: 1180px;
   margin: 28px auto;
@@ -195,11 +196,13 @@ legend {
   flex-direction: column;
   gap: 5px;
   font-size: 12px;
+  min-width: 0;
   font-weight: 550;
   color: var(--muted);
 }
 
 .field {
+  min-width: 0;
   height: 38px;
   padding: 0 11px;
   background: var(--card);
@@ -550,5 +553,166 @@ td.number {
 
   .table-scroll {
     overflow-x: auto;
+  }
+
+  td.notes {
+    min-width: 220px;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    padding: 0 16px;
+  }
+
+  .top-bar .tagline {
+    display: none;
+  }
+
+  main {
+    gap: 14px;
+    margin: 16px auto;
+    padding: 0 12px;
+  }
+
+  .search-card {
+    padding: 18px 16px;
+  }
+
+  .filters,
+  .more-filters-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .filters:not(.more-filters-grid) > :nth-child(n + 3),
+  .more-filters-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .chips {
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+
+  .results-header {
+    padding: 14px 16px;
+  }
+
+  .table-scroll {
+    overflow-x: visible;
+  }
+
+  table,
+  tbody {
+    display: block;
+  }
+
+  thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 5px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--row-line);
+  }
+
+  tbody tr::before {
+    content: '';
+    flex-basis: 100%;
+    order: 4;
+  }
+
+  td {
+    padding: 0;
+    border: 0;
+  }
+
+  td.symbol {
+    order: 1;
+    font-size: 15px;
+  }
+
+  td.side {
+    order: 2;
+  }
+
+  td.price {
+    order: 3;
+    margin-left: auto;
+    font-weight: 600;
+  }
+
+  td.qty,
+  td.account,
+  td.advisor {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  td.qty {
+    order: 5;
+  }
+
+  td.qty::after {
+    content: ' shares';
+  }
+
+  td.account {
+    order: 6;
+  }
+
+  td.account::before {
+    content: '· Acct ';
+  }
+
+  td.advisor {
+    order: 7;
+  }
+
+  td.advisor::before {
+    content: '· ';
+  }
+
+  td.trade-time {
+    order: 8;
+    flex-basis: 100%;
+  }
+
+  .trade-time strong,
+  .trade-time span {
+    display: inline;
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 400;
+  }
+
+  .trade-time span::before {
+    content: ' · ';
+  }
+
+  td.notes {
+    order: 9;
+    flex-basis: 100%;
+    min-width: 0;
+    max-width: none;
+    margin-top: 2px;
+    color: var(--text);
+  }
+
+  td.notes:empty {
+    display: none;
+  }
+
+  .results-footer .ghost-button {
+    width: 100%;
   }
 }
