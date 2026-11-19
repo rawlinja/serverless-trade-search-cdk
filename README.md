@@ -2,8 +2,6 @@
 
 Search trade activity across provider reports. Providers drop CSV reports into S3; each report is loaded into Aurora Serverless v2 PostgreSQL within seconds of arriving, and trades are searchable through a public `GET /search` API and a search page.
 
-![System design](docs/trade-search-system-design.png)
-
 ## Architecture
 
 ```mermaid
