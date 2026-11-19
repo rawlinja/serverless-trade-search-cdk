@@ -73,7 +73,7 @@ sequenceDiagram
         end
         L->>DB: complete run (counts, first 20 rejected lines)
     end
-    Note over Q,L: A thrown error retries the message;<br/>3 failures move it to the DLQ and raise an alarm
+    Note over Q,L: A thrown error retries the message.<br/>3 failures move it to the DLQ and raise an alarm
 ```
 
 ## Search
