@@ -96,6 +96,12 @@ pnpm -s generate-csv 1000 > /tmp/trades.csv
 aws s3 cp /tmp/trades.csv "s3://$BUCKET/reports/$(TZ=America/New_York date +%F)/trades.csv"
 ```
 
+For a demo, [samples/demo-report.csv](samples/demo-report.csv) holds 20,000 generated trades (1.5 MB):
+
+```bash
+aws s3 cp samples/demo-report.csv "s3://$BUCKET/reports/$(TZ=America/New_York date +%F)/demo.csv"
+```
+
 ## Search
 
 ### Search page
