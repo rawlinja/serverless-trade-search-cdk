@@ -133,7 +133,7 @@ curl -s --get "$API_URL/search" --data-urlencode 'keyword="quarterly allocation"
 | `limit`                        | 1–500, default 50                                                                                           |
 | `cursor`                       | `nextCursor` from the previous page                                                                         |
 
-Results come newest first as `{ items, nextCursor }`. Invalid parameters return `400` with `details`. While Aurora resumes from a pause the API returns `503` with `Retry-After: 5`. The API is public and throttled to 10 requests per second (burst 20).
+Results come newest first as `{ items, nextCursor }`; see [docs/API.md](docs/API.md) for the full reference. Invalid parameters return `400` with `details`. While Aurora resumes from a pause the API returns `503` with `Retry-After: 5`. The API is public and throttled to 10 requests per second (burst 20).
 
 ## Operate
 
